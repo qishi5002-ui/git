@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>XeinHack - XeinHack Keys</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,sans-serif;}
+  body{background:#f3f3f3;color:#222;}
+  header{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;padding:1rem 2rem;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;z-index:100;}
+  header .logo{font-size:1.5rem;font-weight:bold;}
+  header button{background:#fff;color:#667eea;border:none;padding:.5rem 1rem;border-radius:20px;cursor:pointer;font-weight:bold;}
+  main{max-width:1200px;margin:2rem auto;padding:0 1rem;}
+  .note-box{background:#fff3cd;color:#856404;padding:.8rem 1rem;border-radius:6px;margin-bottom:1.5rem;text-align:center;font-weight:600;}
+  .products-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem;}
+  .product-card{background:#fff;padding:1rem;border-radius:10px;box-shadow:0 3px 10px rgba(0,0,0,0.1);text-align:center;transition:.2s;}
+  .product-card:hover{transform:translateY(-4px);}
+  .product-icon{font-size:3rem;margin-bottom:.5rem;}
+  .product-title{font-weight:bold;margin-bottom:.3rem;}
+  .product-platform{color:#667eea;margin-bottom:.5rem;}
+  .duration-selector select{width:100%;padding:.4rem;border-radius:6px;border:1px solid #ccc;margin-bottom:.5rem;}
+  .add-to-cart{background:#667eea;color:#fff;border:none;padding:.5rem 1rem;border-radius:8px;cursor:pointer;font-weight:700;width:100%;}
+  .page{display:none;}
+  .page.active{display:block;}
+  .cart-table, .checkout-table, .receipt-table{width:100%;border-collapse:collapse;margin-bottom:1rem;}
+  .cart-table th, .cart-table td, .checkout-table th, .checkout-table td, .receipt-table th, .receipt-table td{padding:.6rem;border-bottom:1px solid #eee;text-align:left;}
+  .quantity-btn{padding:.25rem .5rem;margin:0 2px;border:none;background:#667eea;color:#fff;border-radius:4px;cursor:pointer;}
+  .total{font-weight:800;font-size:1.1rem;text-align:right;margin-top:.5rem;}
+  .checkout-btn,.paid-btn,.back-btn{background:#00d4aa;color:#fff;border:none;padding:.6rem 1rem;border-radius:8px;cursor:pointer;font-weight:700;margin-top:.5rem;}
+  .wallet-box{background:#f7f7f7;padding:.8rem 1rem;border-radius:8px;margin-bottom:.5rem;display:flex;justify-content:space-between;align-items:center;font-family:monospace;}
+  .copy-btn{background:#667eea;color:#fff;border:none;padding:.3rem .6rem;border-radius:4px;cursor:pointer;}
+  .recent-purchase{position:fixed;bottom:20px;left:20px;background:#fff;padding:.6rem 1rem;border-radius:6px;box-shadow:0 2px 10px rgba(0,0,0,.15);font-size:.9rem;z-index:999;}
+  .receipt-note{background:#fff3cd;color:#856404;padding:.6rem 1rem;border-radius:6px;margin-top:1rem;font-weight:600;text-align:center;}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">🎮 XeinHack</div>
+  <button onclick="showPage('cart')">Cart (<span id="cart-count">0</span>)</button>
+</header>
+
+<main>
+  <!-- Store Page -->
+  <div id="store" class="page active">
+    <div class="note-box">NOTE: Please be reminded to screenshot your crypto payment before proceeding to checkout.</div>
+    <div class="products-grid" id="products-grid"></div>
+  </div>
+
+  <!-- Cart Page -->
+  <div id="cart" class="page">
+    <button class="back-btn" onclick="showPage('store')">← Back to Store</button>
+    <table class="cart-table" id="cart-table"></table>
+    <div class="total" id="cart-total"></div>
+    <button class="checkout-btn" onclick="goToCheckout()">Proceed to Checkout</button>
+  </div>
+
+  <!-- Checkout Page -->
+  <div id="checkout" class="page">
+    <button class="back-btn" onclick="showPage('cart')">← Back to Cart</button>
+    <h2>Checkout</h2>
+    <table class="checkout-table" id="checkout-table"></table>
+    <div class="total" id="checkout-total"></div>
+    <div class="wallet-box">
+      <span id="wallet-address">TEwKbkNdXqvNUG951nYTCRF6UjLGBn7pqc</span>
+      <button class="copy-btn" onclick="copyWallet()">Copy</button>
+    </div>
+    <div style="margin-bottom:.5rem;">
+      <label>Telegram Username:</label>
+      <input type="text" id="telegram-username" placeholder="@username" style="width:100%;padding:.4rem;border-radius:6px;border:1px solid #ccc;">
+    </div>
+    <button class="paid-btn" onclick="goToReceipt()">I've Paid</button>
+  </div>
+
+  <!-- Receipt Page -->
+  <div id="receipt" class="page">
+    <h2>Receipt</h2>
+    <table class="receipt-table" id="receipt-table"></table>
+    <div class="total" id="receipt-total"></div>
+    <div class="wallet-box">
+      <span id="receipt-wallet"></span>
+    </div>
+    <div id="receipt-username"></div>
+    <div class="receipt-note">NOTE: Please send BOTH screenshots of your crypto payment and your receipt to <a href="https://t.me/cocomelonqueen" target="_blank">@cocomelonqueen</a></div>
+    <button class="back-btn" onclick="showPage('store')">← Back to Store</button>
+  </div>
+</main>
+
+<div class="recent-purchase" id="recent-purchase"></div>
+
+<script>
+const products = [
+  {id:1,title:"XeinHack PUBG Key",platform:"XeinHack Keys",pricing:{"1_day":5,"3_days":8,"7_days":12,"30_days":23},icon:"🎯"},
+  {id:2,title:"XeinHack Delta Force Key",platform:"XeinHack Keys",pricing:{"1_day":4,"3_days":7,"7_days":11,"30_days":22},icon:"⚡"}
+];
+let cart = [];
+
+// Render Products
+function renderProducts(){
+  const grid = document.getElementById('products-grid');
+  grid.innerHTML='';
+  products.forEach(p=>{
+    let options='';
+    for(const [key,val] of Object.entries(p.pricing)){
+      options+=`<option value="${key}">${key.replace("_"," ")} - $${val}</option>`;
+    }
+    const card=document.createElement('div');
+    card.className='product-card';
+    card.innerHTML=`
+      <div class="product-icon">${p.icon}</div>
+      <div class="product-title">${p.title}</div>
+      <div class="product-platform">${p.platform}</div>
+      <select id="duration-${p.id}">${options}</select>
+      <button class="add-to-cart" onclick="addToCart(${p.id})">Add to Cart</button>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+// Cart Functions
+function addToCart(id){
+  const product=products.find(p=>p.id===id);
+  const select=document.getElementById(`duration-${id}`);
+  const duration=select.value;
+  const price=product.pricing[duration];
+  const existing=cart.find(c=>c.id===id && c.duration===duration);
+  if(existing) existing.quantity++;
+  else cart.push({id, title:product.title, duration, price, quantity:1});
+  updateCartUI();
+}
+function updateCartUI(){
+  document.getElementById('cart-count').textContent=cart.reduce((s,i)=>s+i.quantity,0);
+  const table=document.getElementById('cart-table');
+  if(cart.length===0){ table.innerHTML='<tr><td>Your cart is empty</td></tr>'; document.getElementById('cart-total').textContent=''; return;}
+  let html='<tr><th>Product</th><th>Duration</th><th>Qty</th><th>Price</th><th>Action</th></tr>';
+  cart.forEach((i,idx)=>{
+    html+=`<tr>
+      <td>${i.title}</td>
+           <td>${i.duration.replace("_"," ")}</td>
+      <td>
+        <button class="quantity-btn" onclick="changeQty(${idx},-1)">-</button>
+        ${i.quantity}
+        <button class="quantity-btn" onclick="changeQty(${idx},1)">+</button>
+      </td>
+      <td>$${i.price * i.quantity}</td>
+      <td><button onclick="removeItem(${idx})">Remove</button></td>
+    </tr>`;
+  });
+  table.innerHTML = html;
+  document.getElementById('cart-total').textContent = "Total: $" + cart.reduce((s,i)=>s+i.price*i.quantity,0);
+}
+
+function changeQty(idx, delta){
+  cart[idx].quantity += delta;
+  if(cart[idx].quantity<=0) cart.splice(idx,1);
+  updateCartUI();
+}
+
+function removeItem(idx){
+  cart.splice(idx,1);
+  updateCartUI();
+}
+
+// Page Navigation
+function showPage(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById(page).classList.add('active');
+}
+
+// Checkout
+function goToCheckout(){
+  if(cart.length===0){ alert("Cart is empty!"); return; }
+  const table=document.getElementById('checkout-table');
+  let html='<tr><th>Product</th><th>Duration</th><th>Qty</th><th>Price</th></tr>';
+  cart.forEach(i=>{
+    html+=`<tr>
+      <td>${i.title}</td>
+      <td>${i.duration.replace("_"," ")}</td>
+      <td>${i.quantity}</td>
+      <td>$${i.price * i.quantity}</td>
+    </tr>`;
+  });
+  table.innerHTML=html;
+  document.getElementById('checkout-total').textContent="Total: $" + cart.reduce((s,i)=>s+i.price*i.quantity,0);
+  showPage('checkout');
+}
+
+// Copy wallet
+function copyWallet(){
+  const wallet=document.getElementById('wallet-address').textContent;
+  navigator.clipboard.writeText(wallet);
+  alert("Wallet address copied!");
+}
+
+// Receipt
+function goToReceipt(){
+  const username=document.getElementById('telegram-username').value.trim();
+  if(!username){ alert("Please enter Telegram username"); return; }
+  const table=document.getElementById('receipt-table');
+  let html='<tr><th>Product</th><th>Duration</th><th>Qty</th><th>Price</th></tr>';
+  cart.forEach(i=>{
+    html+=`<tr>
+      <td>${i.title}</td>
+      <td>${i.duration.replace("_"," ")}</td>
+      <td>${i.quantity}</td>
+      <td>$${i.price*i.quantity}</td>
+    </tr>`;
+  });
+  table.innerHTML=html;
+  document.getElementById('receipt-total').textContent="Total: $" + cart.reduce((s,i)=>s+i.price*i.quantity,0);
+  document.getElementById('receipt-wallet').textContent=document.getElementById('wallet-address').textContent;
+  document.getElementById('receipt-username').textContent="Telegram: " + username;
+  cart=[]; updateCartUI();
+  showPage('receipt');
+}
+
+// Recent Purchase Notifications
+const recentUsernames = ["@gamer01","@proplayer","@xHunter","@noobMaster","@legend23"];
+function showRecentPurchase(){
+  const randUser=recentUsernames[Math.floor(Math.random()*recentUsernames.length)];
+  const randMinutes=Math.floor(Math.random()*59)+1;
+  document.getElementById('recent-purchase').textContent = `${randUser} just bought a key ${randMinutes} minutes ago`;
+  setTimeout(showRecentPurchase, Math.floor(Math.random()*10000)+5000);
+}
+
+renderProducts();
+showRecentPurchase();
+</script>
+
+</body>
+</html>
